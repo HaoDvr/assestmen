@@ -1,0 +1,26 @@
+# --- Archivos del Sistema ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- PHP y Servidor ---
+.env
+*.log
+vendor/
+
+# --- VS Code y Editores ---
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# --- Node / SCSS / Tailwind ---
+node_modules/
+.sass-cache/
+.parcel-cache/
+dist/
+
+# --- Archivos Temporales de XAMPP ---
+php_errors.log

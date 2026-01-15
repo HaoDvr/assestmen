@@ -1,0 +1,9 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Si alguien pide la raíz, mándalo a public/
+    RewriteRule ^$ public/ [L]
+    
+    # Si piden cualquier otra cosa, mándalo a public/cosa
+    RewriteRule ^((?!public/).*)$ public/$1 [L]
+</IfModule>
