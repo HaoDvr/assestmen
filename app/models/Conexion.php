@@ -7,7 +7,7 @@ class Conexion
     {
         // Ajusta los datos según tu XAMPP
         $host = "localhost";
-        $db   = "assestment"; // Asegúrate que así se llame tu DB
+        $db   = "assessment"; // Asegúrate que así se llame tu DB
         $user = "root";
         $pass = ""; // Por defecto en XAMPP es vacío
 
