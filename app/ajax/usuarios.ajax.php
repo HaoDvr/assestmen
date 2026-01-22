@@ -47,26 +47,57 @@ class AjaxUsuarios
         $respuesta = UsuariosController::ctrEliminarUsuario($this->idEliminar);
         echo json_encode($respuesta);
     }
+
+    /*-- --------------------------
+    * EDITAR USUARIO
+    -------------------------------*/
+    public $idUsuario;
+
+    public function ajaxEditarUsuario()
+    {
+        if (ob_get_length()) ob_clean(); // Limpia el HTML que se coló
+
+        $item = "id_usuarios";
+        $valor = $this->idUsuario;
+        $respuesta = UsuariosController::ctrMostrarUsuarios($item, $valor);
+
+        echo json_encode($respuesta);
+        exit(); // Detiene la carga del Template o Header
+    }
 }
 
-/**
- * OBJETOS DE RECEPCIÓN
- * Validamos si viene la variable del formulario para activar la clase
- */
+/*=============================================
+OBJETO PARA REGISTRAR USUARIO
+=============================================*/
 if (isset($_POST["nuevoNombre"])) {
 
     $crear = new AjaxUsuarios();
     $crear->ajaxCrearUsuario();
 }
 
+/*=============================================
+OBJETO PARA VALIDAR CORREO
+=============================================*/
 if (isset($_POST["validarCorreo"])) {
     $valCorreo = new AjaxUsuarios();
     $valCorreo->validarCorreo = $_POST["validarCorreo"];
     $valCorreo->ajaxValidarCorreo();
 }
 
+/*=============================================
+OBJETO PARA ELIMINAR USUARIO
+=============================================*/
 if (isset($_POST["idEliminar"])) {
     $eliminar = new AjaxUsuarios();
     $eliminar->idEliminar = $_POST["idEliminar"];
     $eliminar->ajaxEliminarUsuario();
+}
+
+/*=============================================
+OBJETO PARA EDITAR USUARIO
+=============================================*/
+if (isset($_POST["idUsuario"])) {
+    $editar = new AjaxUsuarios();
+    $editar->idUsuario = $_POST["idUsuario"];
+    $editar->ajaxEditarUsuario();
 }

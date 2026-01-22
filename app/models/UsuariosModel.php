@@ -11,12 +11,12 @@ class ModeloUsuarios
     {
         if ($item != null) {
 
-            // Si viene un item (ej. correo_usuario), buscamos solo ese registro
+            // Si viene un item (ej. email_usuario), buscamos solo ese registro
             $stmt = Conexion::conectar()->prepare("SELECT * FROM $tabla WHERE $item = :$item");
             $stmt->bindParam(":" . $item, $valor, PDO::PARAM_STR);
             $stmt->execute();
 
-            return $stmt->fetch(); // Retorna un solo array con el usuario encontrado
+            $resultado = $stmt->fetch(); // Guardamos en variable para poder cerrar la conexión antes de retornar
 
         } else {
 
@@ -24,12 +24,15 @@ class ModeloUsuarios
             $stmt = Conexion::conectar()->prepare("SELECT * FROM $tabla");
             $stmt->execute();
 
-            return $stmt->fetchAll(); // Retorna todos los registros
+            $resultado = $stmt->fetchAll(); // Guardamos todos los registros en variable
 
         }
 
-        $stmt->close();
+        // Cerramos la conexión y limpiamos el objeto
+        $stmt->closeCursor(); // En PDO se recomienda closeCursor() para liberar la conexión al servidor
         $stmt = null;
+
+        return $resultado; // Ahora sí, retornamos los datos ya con la conexión cerrada
     }
 
     /*-- --------------------------
@@ -71,5 +74,45 @@ class ModeloUsuarios
         } else {
             return "error";
         }
+    }
+
+    /*-- --------------------------
+    * EDITAR USUARIO
+    -------------------------------*/
+    static public function mdlEditarUsuario($tabla, $datos)
+    {
+
+        // Preparamos la sentencia SQL con todos los campos de tu tabla
+        $stmt = Conexion::conectar()->prepare("UPDATE $tabla
+        SET nombre_usuario = :nombre,
+            apellido_paterno_usuario = :apellidoP,
+            apellido_materno_usuario = :apellidoM,
+            area = :area,
+            correo_usuario = :correo,
+            perfil_usuario = :perfil,
+            password = :password
+        WHERE id_usuarios = :id");
+
+        // Vinculamos cada parámetro para evitar Inyección SQL
+        $stmt->bindParam(":nombre", $datos["nombre_usuario"], PDO::PARAM_STR);
+        $stmt->bindParam(":apellidoP", $datos["apellido_paterno_usuario"], PDO::PARAM_STR);
+        $stmt->bindParam(":apellidoM", $datos["apellido_materno_usuario"], PDO::PARAM_STR);
+        $stmt->bindParam(":area", $datos["area_usuario"], PDO::PARAM_STR);
+        $stmt->bindParam(":correo", $datos["correo_usuario"], PDO::PARAM_STR);
+        $stmt->bindParam(":perfil", $datos["perfil_usuario"], PDO::PARAM_STR);
+        $stmt->bindParam(":password", $datos["password"], PDO::PARAM_STR);
+        $stmt->bindParam(":id", $datos["id_usuarios"], PDO::PARAM_INT);
+
+        // Ejecutamos y cerramos la conexión
+        if ($stmt->execute()) {
+            return "ok";
+        } else {
+            // En caso de error, puedes imprimir el error para debuggear
+            // return $stmt->errorInfo();
+            return "error";
+        }
+
+        $stmt->closeCursor();
+        $stmt = null;
     }
 }

@@ -33,6 +33,12 @@
                         <p>Usuarios</p>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="salir" class="nav-link">
+                        <i class="nav-icon fas fa-users"></i>
+                        <p>Cerrar Sesion</p>
+                    </a>
+                </li>
             </ul>
         </nav>
     </div>

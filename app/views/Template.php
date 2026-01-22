@@ -1,68 +1,101 @@
 <?php
-/*=============================================
-LOGICA PREVIA AL RENDERIZADO 
-=============================================*/
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// 1. Valores base (Se definen UNA sola vez)
+/*=============================================
+LOGICA PREVIA AL RENDERIZADO
+=============================================*/
 $tituloPagina = "Assestmen";
 $breadcrumbActivo = "Inicio";
 
-// 2. Intentamos mejorar esos valores si hay una URL válida
 if (isset($_GET["url"])) {
-
     $url = preg_replace('/[^a-zA-Z0-9_]/', '', $_GET["url"]);
-    $nombreControlador = ucfirst($url) . "Controller";
+}
 
-    if (class_exists($nombreControlador)) {
-
-        $controller = new $nombreControlador();
-        $paginaConfig = $controller->index();
-
-        // Sobreescribimos los valores base con los del controlador
-        $tituloPagina = $paginaConfig['titulo'];
-        $breadcrumbActivo = $paginaConfig['breadcrumbActivo'];
+/*=============================================
+VALIDACIÓN DE SEGURIDAD
+=============================================*/
+if (isset($url) && (!isset($_SESSION["iniciarSesion"]) || $_SESSION["iniciarSesion"] != "ok")) {
+    if ($url != "login") {
+        echo '<script>window.location = "login?fallo=true";</script>';
+        exit();
     }
-    // NOTA: Ya no necesitamos el "else" aquí, porque si no entra, 
-    // se quedan los valores que pusimos al principio del archivo.
 }
 
 /*=============================================
 RENDERIZADO DE LA PAGINA
 =============================================*/
 include "app/views/components/Header.php";
-include "app/views/components/NavBar.php";
-include "app/views/components/SideBar.php";
-?>
 
-<div class="content-wrapper">
+if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok") {
 
-    <?php
+    $perfilUsuario = strtolower(trim($_SESSION["perfil"] ?? "user"));
 
-    include "app/views/components/ContentHeader.php";
+    // 1. Solo cargamos menús si es Administrador
+    if ($perfilUsuario == "admin") {
+        include "app/views/components/NavBar.php";
+        include "app/views/components/SideBar.php";
+    }
+
+    // 2. Si es usuario, quitamos el margen que deja el SideBar
+    $estiloContenedor = ($perfilUsuario == "user") ? 'style="margin-left: 0px !important;"' : '';
+
+    echo '<div class="content-wrapper" ' . $estiloContenedor . '>';
+
+    // 3. Solo mostramos el cabezal de página (breadcrumb) al Admin
+    if ($perfilUsuario == "admin") {
+        include "app/views/components/ContentHeader.php";
+    }
 
     if (isset($url)) {
 
-        $paginas_validas = ["usuarios"];
+        $paginas_validas = ["usuarios", "salir", "inicio"];
 
         if (in_array($url, $paginas_validas)) {
 
-            $carpeta = explode('_', $url)[0];
+            /*=============================================
+            FILTRO DE VISTA POR PERFIL
+            =============================================*/
+            if ($perfilUsuario == "admin") {
 
-            $ruta_archivo = "app/views/pages/" . $carpeta . "/" . $url . ".php";
+                $carpeta = explode('_', $url)[0];
+                $ruta_archivo = "app/views/pages/" . $carpeta . "/" . $url . ".php";
 
-            if (file_exists($ruta_archivo)) {
-                include $ruta_archivo;
+                if (file_exists($ruta_archivo)) {
+                    include $ruta_archivo;
+                } else {
+                    include "app/views/pages/errors/404.php";
+                }
             } else {
-                include "app/views/pages/errors/404.php";
+
+                // RUTAS PERMITIDAS PARA EL USUARIO
+                if ($url == "inicio") {
+                    include "app/views/pages/inicio/inicio_usuario.php";
+                } else if ($url == "salir") {
+                    // Importante: Permitir que el usuario también pueda salir
+                    include "app/views/pages/salir/salir.php";
+                } else {
+                    include "app/views/pages/errors/404.php";
+                }
             }
         } else {
             include "app/views/pages/errors/404.php";
         }
     } else {
-        include "app/views/pages/inicio/Inicio.php";
+
+        /*=============================================
+        CARGA POR DEFECTO (RAÍZ)
+        =============================================*/
+        if ($perfilUsuario == "admin") {
+            include "app/views/pages/inicio/inicio.php";
+        } else {
+            include "app/views/pages/inicio/inicio_usuario.php";
+        }
     }
-    ?>
 
-</div>
-
-<?php include "app/views/components/Footer.php"; ?>
+    echo '</div>';
+    include "app/views/components/Footer.php";
+} else {
+    include "app/views/pages/login/login.php";
+}

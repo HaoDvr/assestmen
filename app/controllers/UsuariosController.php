@@ -79,4 +79,100 @@ class UsuariosController
         $respuesta = ModeloUsuarios::mdlEliminarUsuario($tabla, $id);
         return $respuesta;
     }
+
+    /*-- --------------------------
+    * INGRESO USUARIO
+    -------------------------------*/
+    public function ctrIngresoUsuario()
+    {
+        if (isset($_POST["ingUsuario"])) {
+
+            // 1. Validamos formato de correo
+            if (preg_match('/^[^0-9][a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[@][a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{2,4}$/', $_POST["ingUsuario"])) {
+
+                $tabla = "usuarios";
+                $item = "correo_usuario"; // Ajustado a tu BD
+                $valor = $_POST["ingUsuario"];
+
+                $respuesta = ModeloUsuarios::mdlMostrarUsuarios($tabla, $item, $valor);
+
+                // 2. Verificamos si existe el usuario y comparamos el password encriptado
+                if (
+                    is_array($respuesta) &&
+                    $respuesta["correo_usuario"] == $_POST["ingUsuario"] &&
+                    password_verify($_POST["ingPassword"], $respuesta["password"])
+                ) { // Usamos password_verify
+
+                    $_SESSION["iniciarSesion"] = "ok";
+                    $_SESSION["id"] = $respuesta["id_usuarios"];
+                    $_SESSION["perfil"] = $respuesta["perfil_usuario"];
+
+                    // Concatenación que pediste
+                    $_SESSION["nombre"] = $respuesta["nombre_usuario"] . " " . $respuesta["apellido_paterno_usuario"] . " " . $respuesta["apellido_materno_usuario"];
+
+                    echo '<script>
+                    window.location = "inicio";
+                </script>';
+                } else {
+                    echo '<br><div class="alert alert-danger">El usuario y/o contraseña son incorrectos</div>';
+                }
+            }
+        }
+    }
+
+    /*-- --------------------------
+    * EDITAR USUARIO
+    -------------------------------*/
+    public function ctrEditarUsuario()
+    {
+        if (isset($_POST["editarNombre"])) {
+
+            $tabla = "usuarios";
+
+            /*=============================================
+            LÓGICA PARA LA CONTRASEÑA
+            =============================================*/
+            if ($_POST["editarContrasena"] != "") {
+                $encriptar = password_hash($_POST["editarContrasena"], PASSWORD_DEFAULT);
+            } else {
+                $encriptar = $_POST["passwordActual"];
+            }
+
+            $datos = array(
+                "id_usuarios" => $_POST["idUsuario"],
+                "nombre_usuario" => $_POST["editarNombre"],
+                "apellido_paterno_usuario" => $_POST["editarApellidoP"],
+                "apellido_materno_usuario" => $_POST["editarApellidoM"],
+                "area_usuario" => $_POST["editarArea"],
+                "correo_usuario" => $_POST["editarCorreo"],
+                "perfil_usuario" => $_POST["editarPerfil"],
+                "password" => $encriptar
+            );
+
+            $respuesta = ModeloUsuarios::mdlEditarUsuario($tabla, $datos);
+
+            if ($respuesta == "ok") {
+                echo '<script>
+                // Esperamos a que el documento esté listo para asegurar que Swal exista
+                document.addEventListener("DOMContentLoaded", function() {
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: "top-end",
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+
+                    Toast.fire({
+                        icon: "success",
+                        title: "¡Usuario actualizado con éxito!"
+                    }).then(function(){
+                        // Solo refrescamos después de que el usuario vea el mensaje
+                        window.location = "usuarios";
+                    });
+                });
+            </script>';
+            }
+        }
+    }
 }
