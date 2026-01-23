@@ -40,21 +40,22 @@ class ModeloUsuarios
     -------------------------------*/
     static public function mdlIngresarUsuario($tabla, $datos)
     {
-        $stmt = Conexion::conectar()->prepare("INSERT INTO $tabla(nombre_usuario, apellido_paterno_usuario, apellido_materno_usuario, area_usuario, correo_usuario, area, perfil_usuario, password) VALUES (:nombre, :apellido_p, :apellido_m, :area_u, :correo, :area, :perfil, :password)");
+        // Eliminamos las repeticiones de 'area' y ':area_u'
+        $stmt = Conexion::conectar()->prepare("INSERT INTO $tabla(nombre_usuario, apellido_paterno_usuario, apellido_materno_usuario, area, correo_usuario, perfil_usuario, password) VALUES (:nombre, :apellido_p, :apellido_m, :area, :correo, :perfil, :password)");
 
         $stmt->bindParam(":nombre", $datos["nombre"], PDO::PARAM_STR);
         $stmt->bindParam(":apellido_p", $datos["apellido_p"], PDO::PARAM_STR);
         $stmt->bindParam(":apellido_m", $datos["apellido_m"], PDO::PARAM_STR);
-        $stmt->bindParam(":area_u", $datos["area"], PDO::PARAM_STR);
-        $stmt->bindParam(":correo", $datos["correo"], PDO::PARAM_STR);
         $stmt->bindParam(":area", $datos["area"], PDO::PARAM_STR);
+        $stmt->bindParam(":correo", $datos["correo"], PDO::PARAM_STR);
         $stmt->bindParam(":perfil", $datos["perfil"], PDO::PARAM_STR);
         $stmt->bindParam(":password", $datos["password"], PDO::PARAM_STR);
 
         if ($stmt->execute()) {
             return "ok";
         } else {
-            return "error";
+            // Esto te ayudará a ver errores de SQL en la consola si vuelve a fallar
+            return "error: " . $stmt->errorInfo()[2];
         }
 
         $stmt->close();

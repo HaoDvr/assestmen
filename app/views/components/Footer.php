@@ -1,6 +1,6 @@
 <footer class="main-footer">
     <div class="float-right d-none d-sm-block"><b>Version</b> 1.0.0</div>
-    <strong>NTT DATA | COE &copy; 2026 <a href="#">Assestmen</a>.</strong>
+    <strong>NTT DATA | COE &copy; 2026 <a href="#">Assessment</a>.</strong>
 </footer>
 
 </div>
@@ -28,6 +28,7 @@
 <script src="public/assets/js/general.js"></script>
 <script src="public/assets/js/dataTableConfig.js"></script>
 <script src="public/assets/js/usuarios.js"></script>
+<script src="public/assets/js/formulario.js"></script>
 </body>
 
 </html>

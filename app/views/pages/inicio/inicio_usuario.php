@@ -1,69 +1,180 @@
+<?php include "app/views/components/componentesUsuarios/NavBar.php"; ?>
+
 <?php
-// Formateamos el nombre: primero todo a minúsculas y luego Capitalizamos cada palabra
+// Formateamos el nombre del usuario para que siempre se vea bien
 $nombreFormateado = mb_convert_case(mb_strtolower($_SESSION["nombre"]), MB_CASE_TITLE, "UTF-8");
 ?>
 
-<nav class="navbar navbar-expand-md navbar-light bg-light elevation-1" style="border-bottom: 1px solid #dee2e6;">
-    <div class="container-fluid">
-        <a href="inicio" class="navbar-brand d-flex align-items-center">
-            <span class="img-circle elevation-2 bg-warning d-flex justify-content-center align-items-center"
-                style="width: 33px; height: 33px; font-weight: bold; font-size: 18px; color: #343a40;">
-                A
-            </span>
-            <span class="brand-text font-weight-normal ml-2" style="color: #495057;">Assess<b>ment</b></span>
-        </a>
+<style>
+    .pagina-encuesta {
+        border: none !important;
+    }
 
-        <div class="ml-3 d-none d-sm-block">
-            <img src="public/assets/img/att-logo.svg" alt="Logo Empresa" class="brand-image" style="max-height: 35px;">
-        </div>
+    /* Estilo para resaltar campos inválidos en Bootstrap 4 */
+    .form-control.is-invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+    }
+</style>
 
-        <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarCollapse">
-            <ul class="navbar-nav ml-auto mt-2 mt-md-0">
-
-                <li class="nav-item mr-md-3 mb-2 mb-md-0">
-                    <div class="text-md-right text-left" style="line-height: 1.2;">
-                        <span class="d-block" style="font-size: 15px; color: #343a40; font-weight: 600;">
-                            <?php echo $nombreFormateado; ?>
-                        </span>
-                        <small class="text-success">
-                            <i class="fas fa-circle" style="font-size: 8px;"></i> Activo
-                        </small>
-                    </div>
-                </li>
-
-                <li class="nav-item border-top border-md-0 pt-2 pt-md-0">
-                    <a class="nav-link text-danger d-flex align-items-center" href="salir" data-toggle="tooltip" data-placement="bottom" title="Cerrar Sesión">
-                        <i class="fas fa-power-off fa-lg mr-2 mr-md-0"></i>
-                        <span class="d-md-none" style="font-weight: 500;">Cerrar Sesión</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
-<div class="content mt-4">
+<div class="content mt-4 pb-5">
     <div class="container">
-        <div class="row">
-            <div class="col-12 text-center">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10 col-xl-9 text-center">
+
                 <h2 class="text-muted">Bienvenido al sistema de evaluación</h2>
                 <hr>
-                <div class="alert alert-info elevation-2">
-                    <h5><i class="icon fas fa-info"></i> Próximamente</h5>
-                    Aquí se cargarán las preguntas asignadas a tu cuenta desde la base de datos.
+
+                <div class="d-flex justify-content-center mt-3">
+                    <div class="col-12 col-md-10 col-lg-8">
+                        <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center rounded-3 text-start py-2 mb-0"
+                            role="alert"
+                            style="background-color: #fff3cd; color: #856404; font-size: 0.85rem;">
+                            <i class="fas fa-exclamation-triangle mr-2 text-warning" style="font-size: 1.2rem;"></i>
+                            <div>
+                                <strong>Recordatorio:</strong> Es necesario seleccionar una opción y completar los campos.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="container-fluid d-flex justify-content-center pt-3">
+                    <div class="row w-100 justify-content-center">
+                        <div class="col-12 col-md-11 col-lg-10 px-0 px-sm-2">
+
+                            <div class="card shadow p-2 p-sm-4 mb-4" style="border-radius: 20px; border: none;">
+
+                                <div class="card-body text-center">
+                                    <p class="card-text text-muted text-start small">
+                                        Por favor conteste las siguientes preguntas para identificar el nivel de madurez. Seleccione una opción y después complete el campo libre.
+                                    </p>
+
+                                    <div class="progress mt-3" style="height: 10px; border-radius: 5px;">
+                                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%;"></div>
+                                    </div>
+
+                                    <small id="progresoTexto" class="text-primary fw-bold d-block mt-1 text-end">Paso 1</small>
+                                </div>
+
+                                <div class="contieneFormulario text-start px-md-4">
+                                    <form id="formularioMadurez" class="needs-validation" novalidate>
+
+                                        <input type="hidden" name="id_usuario" value="<?php echo $_SESSION["id"]; ?>">
+                                        <input type="hidden" name="token_respuesta" value="<?php echo bin2hex(random_bytes(8)); ?>">
+                                        <input type="hidden" name="nombre_usuario_txt" value="<?php echo $nombreFormateado; ?>">
+
+                                        <?php
+                                        $preguntas = PreguntasControlador::ctrMostrarPreguntas($_SESSION["id"]);
+                                        $respuestas = OpcionesRespuestaControlador::ctrMostrarOpcionesRespuesta();
+                                        $totalPreguntas = count($preguntas);
+
+                                        $porPagina = 1;
+                                        $numPaso = 1;
+
+                                        foreach ($preguntas as $index => $pregunta) :
+                                            $idPregunta = $pregunta["id_preguntas_finales"];
+
+                                            if ($index % $porPagina == 0) {
+                                                $claseVisible = ($index == 0) ? "" : "d-none";
+                                                echo '<div class="pagina-encuesta ' . $claseVisible . '" id="paso-' . $numPaso . '">';
+                                                $numPaso++;
+                                            }
+                                        ?>
+
+                                            <label class="form-label text-left fw-bold text-secondary mb-4 mt-2 d-block" style="font-size: 1.1rem;">
+                                                <?php echo ($index + 1); ?>.- ¿<?php echo $pregunta["pregunta_final"]; ?>?
+                                            </label>
+
+                                            <input type="hidden" name="respuestas[<?php echo $idPregunta; ?>][pregunta_txt]" value="<?php echo $pregunta["pregunta_final"]; ?>">
+
+                                            <div class="bloque-respuestas mb-4">
+
+                                                <div class="mb-4 text-left">
+                                                    <label for="libre_<?php echo $idPregunta; ?>" class="text-secondary small fw-bold mb-1 ml-2 d-block">
+                                                        <i class="fas fa-edit mr-1 text-primary"></i> Respuesta Detallada
+                                                    </label>
+                                                    <div class="shadow-sm" style="border-radius: 10px;">
+                                                        <textarea class="form-control"
+                                                            id="libre_<?php echo $idPregunta; ?>"
+                                                            name="respuestas[<?php echo $idPregunta; ?>][libre]"
+                                                            placeholder="Escriba aquí los detalles de su respuesta detallada..."
+                                                            style="height: 120px; border-radius: 10px; border: 1px solid #dee2e6; font-size: 0.9rem; padding: 15px;"
+                                                            required></textarea>
+                                                    </div>
+                                                </div>
+
+                                                <div class="grupo-opciones mb-4">
+                                                    <?php foreach ($respuestas as $respuesta) :
+                                                        $idOpcion = $respuesta['id_opciones_respuestas'];
+                                                        $inputId = "resp_" . $idPregunta . "_" . $idOpcion;
+                                                    ?>
+                                                        <div class="form-check border shadow-sm mb-3 d-flex align-items-center justify-content-start text-left py-3"
+                                                            style="cursor: pointer; border-radius: 10px !important; position: relative; min-height: 60px;">
+
+                                                            <input class="form-check-input"
+                                                                type="radio"
+                                                                name="respuestas[<?php echo $idPregunta; ?>][id_seleccionada]"
+                                                                id="<?php echo $inputId; ?>"
+                                                                value="<?php echo $idOpcion; ?>"
+                                                                data-texto="<?php echo $respuesta["descripcion_respuestas"]; ?>"
+                                                                data-valor="<?php echo $respuesta["valor_respuesta"]; ?>"
+                                                                style="width: 1.3rem; height: 1.3rem; cursor: pointer; position: absolute; left: 15px; top: 50%; transform: translateY(-50%); margin: 0;"
+                                                                required>
+
+                                                            <label class="form-check-label w-100 fw-medium text-dark mb-0 text-left"
+                                                                for="<?php echo $inputId; ?>"
+                                                                style="cursor: pointer; font-size: 0.85rem; line-height: 1.4; padding-left: 35px; padding-right: 10px;">
+                                                                <?php echo $respuesta["descripcion_respuestas"]; ?>
+                                                            </label>
+                                                        </div>
+                                                    <?php endforeach; ?>
+
+                                                    <input type="hidden" name="respuestas[<?php echo $idPregunta; ?>][respuesta_txt]" id="txt_<?php echo $idPregunta; ?>">
+                                                    <input type="hidden" name="respuestas[<?php echo $idPregunta; ?>][valor]" id="val_<?php echo $idPregunta; ?>">
+
+                                                    <div class="invalid-feedback mt-2 fw-bold p-2 rounded-2" style="font-size: 0.85rem; border: 1px solid #dc3545; background-color: #fff8f8; display: none;">
+                                                        Debes seleccionar una opción para continuar.
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3 text-left">
+                                                    <label for="detallada_<?php echo $idPregunta; ?>" class="text-secondary small fw-bold mb-1 ml-2 d-block">
+                                                        <i class="fas fa-rocket mr-1 text-primary"></i> Iniciativa para automatización <span class="font-weight-light">(Opcional)</span>
+                                                    </label>
+                                                    <div class="shadow-sm" style="border-radius: 10px;">
+                                                        <textarea class="form-control"
+                                                            id="detallada_<?php echo $idPregunta; ?>"
+                                                            name="respuestas[<?php echo $idPregunta; ?>][detallada]"
+                                                            placeholder="Escriba aquí los detalles de su iniciativa (si aplica)..."
+                                                            style="height: 100px; border-radius: 10px; border: 1px solid #dee2e6; font-size: 0.9rem; padding: 15px;"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        <?php
+                                            if (($index + 1) % $porPagina == 0 || ($index + 1) == $totalPreguntas) {
+                                                echo '</div>';
+                                            }
+                                        endforeach; ?>
+
+                                        <div class="d-flex justify-content-between p-4 mt-2">
+                                            <button type="button" class="btn btn-outline-secondary btn-lg rounded-pill px-4 d-none" id="btnAnterior">
+                                                <i class="fas fa-chevron-left mr-2"></i> Anterior
+                                            </button>
+                                            <button type="button" class="btn btn-primary btn-lg rounded-pill px-4 ms-auto" id="btnSiguiente">
+                                                Siguiente <i class="fas fa-chevron-right ml-2"></i>
+                                            </button>
+                                            <button type="submit" class="btn btn-success btn-lg shadow rounded-pill py-3 fw-bold d-none ms-auto" id="btnSubmit">
+                                                <i class="fas fa-paper-plane mr-2"></i> Enviar Formulario
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-    // Inicializar tooltips de Bootstrap
-    $(function() {
-        $('[data-toggle="tooltip"]').tooltip()
-    })
-</script>

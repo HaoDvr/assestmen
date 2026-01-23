@@ -138,7 +138,7 @@
                         <div class="input-group">
                             <input type="password" class="form-control" name="nuevaContrasena" id="nuevaContrasena" placeholder="Contraseña segura" required>
                             <div class="input-group-append">
-                                <button class="btn btn-primary" type="button" onclick="mostrarPassword()">
+                                <button class="btn btn-primary" type="button" onclick="mostrarPassword('nuevaContrasena', 'iconoPassword')">
                                     <i class="fas fa-eye" id="iconoPassword"></i>
                                 </button>
                             </div>
@@ -225,7 +225,7 @@
                         <div class="input-group">
                             <input type="password" class="form-control" name="editarContrasena" id="editarContrasena" placeholder="Dejar vacío si no desea cambiarla">
                             <div class="input-group-append">
-                                <button class="btn btn-primary" type="button" onclick="mostrarPasswordEditar()">
+                                <button class="btn btn-primary" type="button" onclick="mostrarPassword('editarContrasena', 'iconoPasswordEditar')">
                                     <i class="fas fa-eye" id="iconoPasswordEditar"></i>
                                 </button>
                             </div>
