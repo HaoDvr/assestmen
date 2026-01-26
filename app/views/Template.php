@@ -50,7 +50,7 @@ if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok") {
 
     if (isset($url)) {
 
-        $paginas_validas = ["usuarios", "salir", "inicio"];
+        $paginas_validas = ["usuarios", "salir", "inicio", "fin"];
 
         if (in_array($url, $paginas_validas)) {
 

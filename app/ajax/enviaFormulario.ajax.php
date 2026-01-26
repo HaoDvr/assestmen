@@ -1,8 +1,8 @@
 <?php
 // ajax/respuestas.ajax.php
 
-require_once "../controller/RespuestasController.php";
-require_once "../model/respuestas.model.php";
+require_once "../controllers/RespuestasController.php";
+require_once "../models/RespuestasModel.php";
 
 class AjaxRespuestas
 {

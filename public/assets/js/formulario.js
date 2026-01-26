@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function enviarFormularioAjax() {
         const datos = new FormData(form);
         $.ajax({
-            url: "app/ajax/respuestas.ajax.php",
+            url: "app/ajax/enviaFormulario.ajax.php",
             method: "POST",
             data: datos,
             cache: false,
@@ -157,7 +157,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         icon: "success",
                         confirmButtonText: "Aceptar",
                     }).then(() => {
-                        window.location = "inicio";
+                        window.location = "salir";
                     });
                 } else {
                     Swal.fire(

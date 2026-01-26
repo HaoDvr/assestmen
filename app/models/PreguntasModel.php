@@ -7,7 +7,7 @@ class ModeloMostrarPreguntas
 
     static public function mdlMostrarPreguntas($tabla)
     {
-        $stmt = Conexion::conectar()->prepare("SELECT * FROM $tabla LIMIT 4");
+        $stmt = Conexion::conectar()->prepare("SELECT * FROM $tabla LIMIT 1");
         $stmt->execute();
         return $stmt->fetchAll();
         $stmt->close();
